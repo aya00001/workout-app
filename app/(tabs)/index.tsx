@@ -1,59 +1,82 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
+import { Platform, StyleSheet, FlatList, View, Text, TouchableOpacity, Modal} from 'react-native';
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useState } from 'react';
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+export default function HomeScreen() { 
+
+
+
+  const [isAddWorkoutFormVisible, setAddWorkoutFormVisible] = useState(false);
+  
+  const handleButtonPress = () => {
+    console.log("The 'Add New Workout' button was pressed!");
+    setAddWorkoutFormVisible(true);
+  };
+  
+  const HandleCloseform = () => {
+    console.log("Closing the add workout form");
+    setAddWorkoutFormVisible(false);
+  }
+
+  return ( 
+    
+    
+    <View style={styles.container}>
+      <ThemedText style={styles.headerText}>Add Workout</ThemedText> 
+
+      
+      <TouchableOpacity 
+      style={styles.button} 
+      onPress={handleButtonPress}>
+
+        <Text style={styles.buttonText}>Add New Workout</Text>
+      </TouchableOpacity>
+
+      <Modal
+      animationType = "slide"
+      transparent = {true}
+      visible= {isAddWorkoutFormVisible}
+      onRequestClose={HandleCloseform}
+      >
+        <View style={styles.modalCentreView}>
+          <View style={styles.ModalView}>
+
+          <Text style={styles.ModalTitle}>New Workout</Text>
+
+          
+          <Text>Workout Name: [TextInput here]</Text>
+          <Text>Sets: [TextInput here]</Text>
+          <Text>Reps: [TextInput here]</Text>
+          <Text>Weight: [TextInput here]</Text>
+          <Text>Notes: [TextInput here]</Text>
+
+          <TouchableOpacity
+          style={[styles.button, styles.buttonClose]}
+          onPress={HandleCloseform}
+          >
+
+            <Text style={styles.buttonText}>Cancel</Text> 
+          </TouchableOpacity>
+
+          <TouchableOpacity
+          style={[styles.button, styles.buttonAddModal]}
+          onPress={() => console.log('Add workout button was pressed')} //temp until function made
+          >
+            <Text style={styles.buttonText}>Add Workout</Text>
+
+          </TouchableOpacity>
+
+          </View>
+        </View>
+      </Modal>
+
+    </View> 
+  ); 
+} 
 
 const styles = StyleSheet.create({
   titleContainer: {
@@ -72,4 +95,60 @@ const styles = StyleSheet.create({
     left: 0,
     position: 'absolute',
   },
+   container: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+   },
+     headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 40,
+    color: '#333',
+   },
+     button: {
+    backgroundColor: '#007bff', // its blue
+    padding: 15, 
+    borderRadius: 10, 
+    marginTop: 20, 
+    width: '80%', 
+    alignItems: 'center', 
+  },
+  buttonText: {
+    color: 'white', 
+    fontSize: 18, 
+    fontWeight: 'bold',
+  },
+  modalCentreView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)' //black with 50% opacity
+  },
+  ModalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    }
+  },
+  ModalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: "#333",
+  },
+  buttonClose: {
+    backgroundColor: '#dc3545', //its red
+    marginTop: 15,
+  },
+  buttonAddModal: {
+    backgroundColor: '#28a745', // its green
+    marginTop: 10,
+  }
 });
