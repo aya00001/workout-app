@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, FlatList, View, Text, TouchableOpacity, Modal, TextInput} from 'react-native';
+import { Platform, StyleSheet, FlatList, View, Text, TouchableOpacity, Modal, TextInput, Appearance} from 'react-native';
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AsyncStorage, {useAsyncStorage } from '@react-native-async-storage/async-storage'
 
 type WeightUnit = 'kg' | 'lbs'
 
@@ -33,57 +34,78 @@ export default function HomeScreen() {
 
   const [workouts, setWorkouts] = useState<Workout[]>([]);
 
+    useEffect( () => {
+      const loadWorkouts = async () => {
+
+      try {
+      const stringData = await AsyncStorage.getItem("Workouts");
+
+      if (stringData) {
+        const arrayData = JSON.parse(stringData);
+        setWorkouts(arrayData);
+      }
+      } catch (error){
+        console.log("Something went wrong loading the data.", error)
+      }
+    };
+    loadWorkouts();
+  }, []);
+
+
+
+
   const handleButtonPress = () => {
-    console.log("The 'Add New Workout' button was pressed!");
-    setAddWorkoutFormVisible(true);
-    setCurrentWorkout({name: '', sets: '', reps: '', weight: '', notes: ''});
-  };
+        console.log("The 'Add New Workout' button was pressed!");
+        setAddWorkoutFormVisible(true);
+        setCurrentWorkout({name: '', sets: '', reps: '', weight: '', notes: ''});
+      };
   
   const HandleCloseform = () => {
-    console.log("Closing the add workout form");
-    setAddWorkoutFormVisible(false);
-    setCurrentWorkout({name: '', sets: '', reps: '', weight: '', notes: ''});
-  }
+        console.log("Closing the add workout form");
+        setAddWorkoutFormVisible(false);
+        setCurrentWorkout({name: '', sets: '', reps: '', weight: '', notes: ''});
+      }
 
 
   const handleInputChange = (field: keyof Workout, textValue: string) => { 
-  let parsedValue: string | number = textValue; 
+      let parsedValue: string | number = textValue; 
+
+      if ((field === 'sets' || field === 'reps' || field === 'weight') && textValue !== '') {
+
+        parsedValue = parseFloat(textValue);
+
+        if (isNaN(parsedValue)) {
+            parsedValue = '';
+        }
+      }
+      setCurrentWorkout(prevState => ({
+        ...prevState,
+        [field]: parsedValue,
+      }));
+
+      };
 
 
-  if ((field === 'sets' || field === 'reps' || field === 'weight') && textValue !== '') {
+ const handleAddWorkout = async () => {
+      if (!currentWorkout.name) {
+        alert('Workout Name is required!'); 
+        return; 
+      }
 
-    parsedValue = parseFloat(textValue);
+      const newWorkout = {
+        ...currentWorkout,
+        id: Date.now().toString(), 
+      };
 
-    if (isNaN(parsedValue)) {
-        parsedValue = '';
-    }
-  }
-  setCurrentWorkout(prevState => ({
-    ...prevState,
-    [field]: parsedValue,
-  }));
+      const UpdatedWorkouts = [...workouts, newWorkout];
+      setWorkouts(UpdatedWorkouts);
+      await AsyncStorage.setItem("Workouts", JSON.stringify(UpdatedWorkouts));
 
-  };
+      console.log('Added workout:', newWorkout);
+      console.log('Total workouts in list:', workouts.length + 1);
 
-
- const handleAddWorkout = () => {
-    if (!currentWorkout.name) {
-      alert('Workout Name is required!'); 
-      return; 
-    }
-
-    const newWorkout = {
-      ...currentWorkout,
-      id: Date.now().toString(), 
+      HandleCloseform(); 
     };
-
-    setWorkouts(prevWorkouts => [...prevWorkouts, newWorkout]);
-
-    console.log('Added workout:', newWorkout);
-    console.log('Total workouts in list:', workouts.length + 1);
-
-    HandleCloseform(); 
-  };
 
 
   return ( 
@@ -271,7 +293,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: 'white',
+    color: '#EFEEEA',
   },
   buttonClose: {
     backgroundColor: '#E63946', //its red
